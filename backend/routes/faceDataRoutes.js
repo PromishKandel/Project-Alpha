@@ -2,19 +2,20 @@ const express = require('express');
 const router = express.Router();
 const FaceData = require('../models/FaceData');
 
-// Route to add new face data
 router.post('/addFaceData', async (req, res) => {
-  const { name, imageData } = req.body;
+  const { name, imageData, lastlocation } = req.body;
   try {
-    // Create a new face data instance
-    const newFaceData = new FaceData({ name, imageData });
-    // Save the face data to the database
+    console.log('Received data:', { name, imageData, lastlocation });
+    const newFaceData = new FaceData({ name, imageData, lastlocation });
     await newFaceData.save();
+    console.log('Saved data:', newFaceData);
     res.status(201).json(newFaceData);
   } catch (error) {
+    console.error('Error saving data:', error);
     res.status(500).json({ error: 'Failed to add face data' });
   }
 });
+
 
 // Route to get all face data
 router.get('/faceData', async (req, res) => {

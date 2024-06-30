@@ -10,10 +10,10 @@ const FaceDataSchema = new mongoose.Schema({
     type: String, // Assuming you are storing image data as a Base64 string
     required: true
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  lastlocation:{
+    type:String,
+    required: true
+  },
 });
 
 // Create the Face Data model from the schema
