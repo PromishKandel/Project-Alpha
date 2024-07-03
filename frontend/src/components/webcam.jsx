@@ -56,6 +56,12 @@ const Webcam = ({ onCapture }) => {
         tracks.forEach(track => track.stop());
         videoRef.current.srcObject = null;
       }
+
+      // Clear canvas when streaming stops
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
     }
 
     return () => {
@@ -66,7 +72,7 @@ const Webcam = ({ onCapture }) => {
   }, [isStreaming]);
 
   const detectFaces = async () => {
-    if (videoRef.current && canvasRef.current) {
+    if (isStreaming && videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
 
@@ -87,9 +93,6 @@ const Webcam = ({ onCapture }) => {
         .withFaceLandmarks()
         .withAgeAndGender();
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
-
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       resizedDetections.forEach(detection => {
         const box = detection.detection.box;
@@ -160,7 +163,7 @@ const Webcam = ({ onCapture }) => {
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center">
-      <div className="w-full h-96 border-4 border-red-500 rounded flex items-center justify-center bg-gray-100 relative">
+      <div className="w-full h-2/3 border-4 border-red-500 rounded flex items-center justify-center bg-gray-100 relative">
         {isStreaming ? (
           <video ref={videoRef} autoPlay className="w-full h-full object-cover absolute top-0 left-0 z-0" />
         ) : (
