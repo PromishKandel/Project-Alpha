@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as faceapi from 'face-api.js';
+import axios from 'axios';
 
 const MODEL_URL = '/models';
 
@@ -10,6 +11,7 @@ const Webcam = ({ onCapture }) => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [errorLoadingModels, setErrorLoadingModels] = useState(false);
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0 });
+  const [faceData, setFaceData] = useState([]);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -29,6 +31,23 @@ const Webcam = ({ onCapture }) => {
     };
 
     loadModels();
+  }, []);
+
+  useEffect(() => {
+    const fetchFaceData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/api/getFaceData');
+        if (Array.isArray(response.data)) {
+          setFaceData(response.data);
+        } else {
+          console.error('Fetched face data is not an array:', response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching face data:', error);
+      }
+    };
+
+    fetchFaceData();
   }, []);
 
   useEffect(() => {
@@ -57,7 +76,6 @@ const Webcam = ({ onCapture }) => {
         videoRef.current.srcObject = null;
       }
 
-      // Clear canvas when streaming stops
       if (canvasRef.current) {
         const ctx = canvasRef.current.getContext('2d');
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -75,39 +93,68 @@ const Webcam = ({ onCapture }) => {
     if (isStreaming && videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-
+  
       if (video.videoWidth === 0 || video.videoHeight === 0) {
         console.warn('Video dimensions are zero, waiting for valid dimensions...');
         return;
       }
-
+  
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const displaySize = { width: video.videoWidth, height: video.videoHeight };
       faceapi.matchDimensions(canvas, displaySize);
-
+  
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  
       const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
+        .withFaceDescriptors()
         .withAgeAndGender();
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
-
-      resizedDetections.forEach(detection => {
-        const box = detection.detection.box;
-        const gender = detection.gender;
-        const text = `${gender} (${Math.round(detection.age)})`;
-
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-        ctx.fillStyle = 'red';
-        ctx.font = '16px Arial';
-        ctx.fillText(text, box.x, box.y + box.height + 20);
-      });
+  
+      if (Array.isArray(faceData)) {
+        const labeledDescriptors = faceData.map(fd => new faceapi.LabeledFaceDescriptors(fd.name, [new Float32Array(fd.faceDescriptor)]));
+        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+  
+        resizedDetections.forEach(detection => {
+          const box = detection.detection.box;
+          const descriptor = detection.descriptor;
+  
+          const bestMatch = faceMatcher.findBestMatch(descriptor);
+  
+          let text = 'Unknown';
+          let locationText = '';
+          let ageText = `Age: ${Math.round(detection.age)}`;
+          if (bestMatch.label !== 'unknown') {
+            const matchedFace = faceData.find(fd => fd.name === bestMatch.label);
+            text = matchedFace.name;
+            locationText = matchedFace.lastLocation;
+          }
+  
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(box.x, box.y, box.width, box.height);
+  
+          // Draw multiline text
+          drawMultilineText(ctx, [text, locationText, ageText], box.x, box.y + box.height + 20);
+        });
+      } else {
+        console.error('faceData is not an array:', faceData);
+      }
+  
+      captureImage();
     }
+  };
+  
+  const drawMultilineText = (ctx, textArray, x, y) => {
+    const lineHeight = 20; // Adjust line height as needed
+    ctx.fillStyle = 'red';
+    ctx.font = '16px Arial';
+  
+    textArray.forEach((text, index) => {
+      ctx.fillText(text, x, y + (index * lineHeight));
+    });
   };
 
   useEffect(() => {
@@ -146,7 +193,10 @@ const Webcam = ({ onCapture }) => {
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
     const imageUrl = canvas.toDataURL('image/png');
-    onCapture(imageUrl);
+    // Call the onCapture callback with the captured image URL
+    if (onCapture) {
+      onCapture(imageUrl);
+    }
   };
 
   const toggleWebcam = () => {

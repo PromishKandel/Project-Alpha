@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import * as faceapi from 'face-api.js';
 
 const UploadTargetPage = () => {
   const [name, setName] = useState('');
@@ -10,40 +11,66 @@ const UploadTargetPage = () => {
     setFile(e.target.files[0]);
   };
 
+  const MODEL_URL = '/models';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     console.log('Submitting form with:', { name, location, file });
-
+  
     if (!file) {
       alert('Please upload a file');
       return;
     }
-
+  
     const reader = new FileReader();
     reader.onloadend = async () => {
       const imageData = reader.result;
-
+  
       try {
+        console.log('Loading models...');
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+        ]);
+        console.log('Face detection and landmark models loaded.');
+  
+        console.log('Fetching image...');
+        const img = await faceapi.fetchImage(imageData);
+        console.log('Image loaded successfully:', img);
+  
+        console.log('Detecting faces...');
+        const detections = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors();
+        console.log('Face detected:', detections);
+  
+        // Extract face descriptors
+        const faceDescriptors = detections.map(detection => detection.descriptor);
+  
+        console.log('Sending data to backend...');
         const response = await axios.post('http://localhost:5001/api/addFaceData', {
           name,
           imageData,
-          lastlocation: location,
+          lastLocation: location,
+          faceDescriptor: faceDescriptors.length > 0 ? Array.from(faceDescriptors[0]) : null
         });
-
+  
         if (response.status === 201) {
           alert('Face data uploaded successfully');
         } else {
           alert('Failed to upload face data');
         }
       } catch (error) {
-        console.error('There was an error uploading the face data!', error);
+        console.error('There was an error:', error);
         alert('Failed to upload face data');
       }
     };
-
+  
     reader.readAsDataURL(file);
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

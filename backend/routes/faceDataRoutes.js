@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const FaceData = require('../models/FaceData');
+const compareRoutes = require('./compareRoutes'); // Add this line
+
+router.use('/compare', compareRoutes); // Mount the compare routes
 
 router.post('/addFaceData', async (req, res) => {
-  const { name, imageData, lastlocation } = req.body;
+  const { name, imageData, lastLocation, faceDescriptor } = req.body;
   try {
-    console.log('Received data:', { name, imageData, lastlocation });
-    const newFaceData = new FaceData({ name, imageData, lastlocation });
+    console.log('Received data:', { name, imageData, lastLocation, faceDescriptor });
+    const newFaceData = new FaceData({ name, imageData, lastLocation, faceDescriptor });
     await newFaceData.save();
     console.log('Saved data:', newFaceData);
     res.status(201).json(newFaceData);
@@ -16,9 +19,8 @@ router.post('/addFaceData', async (req, res) => {
   }
 });
 
-
 // Route to get all face data
-router.get('/faceData', async (req, res) => {
+router.get('/getFaceData', async (req, res) => {
   try {
     const faceData = await FaceData.find();
     res.json(faceData);
@@ -27,5 +29,4 @@ router.get('/faceData', async (req, res) => {
   }
 });
 
-// Export the router
 module.exports = router;
