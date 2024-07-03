@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Webcam from '../components/webcam';
+import Webcam from '../components/Webcam';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 
