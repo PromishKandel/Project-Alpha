@@ -3,18 +3,21 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import UploadTarget from './pages/UploadTarget'; // Ensure this path is correct
 import Header from './components/Header'; // Ensure this path is correct
 import Hawk from './pages/Hawk';
+import TargetPage from './pages/TargetPage';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Header />
-        <Routes>
-          <Route path="/" element={<Hawk />} />
-          <Route path="/upload-target" element={<UploadTarget />} />
-        </Routes>
-      </div>
-    </Router>
+    // <Router>
+    //   <div className="App">
+    //     <Header />
+    //     <Routes>
+    //       <Route path="/" element={<Hawk />} />
+    //       <Route path="/upload-target" element={<UploadTarget />} />
+    //     </Routes>
+    //   </div>
+    // </Router>
+    // <UploadTarget/>
+    <TargetPage/>
   );
 }
 

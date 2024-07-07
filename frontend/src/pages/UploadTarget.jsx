@@ -1,129 +1,13 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import * as faceapi from 'face-api.js';
+import NewTargetModal from "../components/NewTargetModal";
+import Header from "../components/Header";
 
-const UploadTargetPage = () => {
-  const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [file, setFile] = useState(null);
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const MODEL_URL = '/models';
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    console.log('Submitting form with:', { name, location, file });
-  
-    if (!file) {
-      alert('Please upload a file');
-      return;
-    }
-  
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const imageData = reader.result;
-  
-      try {
-        console.log('Loading models...');
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
-          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-        ]);
-        console.log('Face detection and landmark models loaded.');
-  
-        console.log('Fetching image...');
-        const img = await faceapi.fetchImage(imageData);
-        console.log('Image loaded successfully:', img);
-  
-        console.log('Detecting faces...');
-        const detections = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors();
-        console.log('Face detected:', detections);
-  
-        // Extract face descriptors
-        const faceDescriptors = detections.map(detection => detection.descriptor);
-  
-        console.log('Sending data to backend...');
-        const response = await axios.post('http://localhost:5001/api/addFaceData', {
-          name,
-          imageData,
-          lastLocation: location,
-          faceDescriptor: faceDescriptors.length > 0 ? Array.from(faceDescriptors[0]) : null
-        });
-  
-        if (response.status === 201) {
-          alert('Face data uploaded successfully');
-        } else {
-          alert('Failed to upload face data');
-        }
-      } catch (error) {
-        console.error('There was an error:', error);
-        alert('Failed to upload face data');
-      }
-    };
-  
-    reader.readAsDataURL(file);
-  };
-  
-
+const UploadTarget = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-6">Upload Target</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
-              Last Known Location
-            </label>
-            <input
-              id="location"
-              type="text"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="file">
-              Upload Picture
-            </label>
-            <input
-              id="file"
-              type="file"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              onChange={handleFileChange}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-      </div>
+    <div className="w-full relative shadow-[555px_868px_288px_rgba(0,_0,_0,_0),_355px_556px_264px_rgba(0,_0,_0,_0.01),_200px_312px_223px_rgba(0,_0,_0,_0.05),_89px_139px_165px_rgba(0,_0,_0,_0.09),_22px_35px_91px_rgba(0,_0,_0,_0.1)] [background:radial-gradient(50%_50%_at_50%_50%,_#4b4d4f,_#151516)] h-screen overflow-hidden">
+      <NewTargetModal />
+      <Header/>
     </div>
   );
 };
 
-export default UploadTargetPage;
+export default UploadTarget;

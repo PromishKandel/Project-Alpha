@@ -1,28 +1,30 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-
 const Header = () => {
-  const navigate = useNavigate();
-
   return (
-    <header className="bg-blue-500 text-white p-4 flex justify-between items-center">
-      <h1 className="text-xl font-bold">Face Recognition Application</h1>
-      <div className="flex space-x-4">
-        <button 
-          className="bg-gray-700 px-4 py-2 rounded" 
-          onClick={() => navigate('/')}
-        >
-          Find Target
+    <header
+      className={`absolute  shadow-[0px_4px_20px_rgba(0,_0,_0,_0.25)] bg-gray-300 w-full overflow-hidden flex flex-row items-start justify-center py-[31px] px-[58px] box-border gap-[1000px]`}
+    >
+      <img className="w-[165px] relative h-[45px]" alt="" src="/vector1.svg" />
+      <div className="flex flex-row items-center justify-start gap-[10px]">
+        <button className="cursor-pointer [border:none] py-2.5 px-2 bg-white-8 w-40 rounded-xl flex flex-row items-center justify-center box-border">
+          <div className="relative text-base leading-[24px] font-semibold font-button-2-regular text-neutral-100 text-center">
+            Find Target
+          </div>
         </button>
-        <button 
-          className="bg-gray-700 px-4 py-2 rounded" 
-          onClick={() => navigate('/upload-target')}
-        >
-          Upload Target
+        <button className="cursor-pointer [border:none] py-2.5 px-2 bg-white-8 w-40 rounded-xl flex flex-row items-center justify-center box-border">
+          <div className="relative text-base leading-[24px] font-semibold font-button-2-regular text-neutral-100 text-center">
+            Upload Target
+          </div>
+        </button>
+        <button className="cursor-pointer [border:none] py-2.5 px-2 bg-primary-500 w-40 rounded-xl flex flex-row items-center justify-center box-border">
+          <div className="relative text-base leading-[24px] font-semibold font-button-2-regular text-neutral-100 text-center">
+            Logout
+          </div>
         </button>
       </div>
     </header>
   );
-};
-
-export default Header;
+  };
+  
+  
+  export default Header;
+  
