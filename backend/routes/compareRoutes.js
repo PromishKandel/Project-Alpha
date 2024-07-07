@@ -2,12 +2,16 @@ const express = require('express');
 const router = express.Router();
 const FaceData = require('../models/FaceData');
 const faceapi = require('face-api.js');
+const path = require('path');
 
-// Load models from the file system (adjust path as needed)
-const MODEL_URL = '/models';
-faceapi.nets.ssdMobilenetv1.loadFromDisk(MODEL_URL);
-faceapi.nets.faceLandmark68Net.loadFromDisk(MODEL_URL);
-faceapi.nets.faceRecognitionNet.loadFromDisk(MODEL_URL);
+const MODEL_URL = path.join(__dirname, '../../Frontend/public/models');
+Promise.all([
+  faceapi.nets.ssdMobilenetv1.loadFromDisk(MODEL_URL),
+  faceapi.nets.faceLandmark68Net.loadFromDisk(MODEL_URL),
+  faceapi.nets.faceRecognitionNet.loadFromDisk(MODEL_URL)
+]).then(() => {
+  console.log('Models loaded');
+});
 
 router.post('/compareFace', async (req, res) => {
   try {

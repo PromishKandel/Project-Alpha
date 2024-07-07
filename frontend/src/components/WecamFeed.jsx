@@ -142,8 +142,6 @@ const WecamFeed = ({ onCapture }) => {
       } else {
         console.error('faceData is not an array:', faceData);
       }
-  
-      captureImage();
     }
   };
   
@@ -215,14 +213,14 @@ const WecamFeed = ({ onCapture }) => {
       <div
         className={`absolute top-[calc(50%_-_273px)] left-[calc(50%_-_631px)] w-[741px] h-[727px]`}
       >
-        <button className="cursor-pointer [border:none] py-2.5 px-2 bg-white-8 absolute top-[683px] left-[calc(50%_-_263.5px)] rounded-xl w-[252px] flex flex-row items-center justify-center box-border">
+        <div className="cursor-pointer [border:none] py-2.5 px-2 bg-white-8 absolute top-[683px] left-[calc(50%_-_263.5px)] rounded-xl w-[252px] flex flex-row items-center justify-center box-border">
           <button
             onClick={toggleWebcam}
             className="relative text-base leading-[24px] font-semibold font-button-2-regular text-neutral-100 text-center"
           >
             {isStreaming ? "Turn Off Webcam" : "Turn On Webcam"}
           </button>
-        </button>
+        </div>
         {isStreaming && (
           <button
             onClick={captureImage}
