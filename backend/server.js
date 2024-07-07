@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const faceDataRoutes = require('./routes/faceDataRoutes');
+const loginRoutes = require('./routes/LoginRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -20,6 +21,7 @@ mongoose.connect(uri, {
 .catch(err => console.log(err));
 
 app.use('/api', faceDataRoutes); // Use the face data routes
+app.use('/api', loginRoutes);
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
