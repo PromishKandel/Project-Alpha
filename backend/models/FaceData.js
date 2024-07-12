@@ -10,9 +10,13 @@ const FaceDataSchema = new mongoose.Schema({
     type: String, // Assuming you are storing image data as a Base64 string
     required: true
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  lastLocation: {
+    type: String,
+    required: true
+  },
+  faceDescriptor: {
+    type: [Number], // Store face descriptor (e.g., from face-api.js)
+    required: true
   }
 });
 
